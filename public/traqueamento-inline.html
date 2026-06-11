@@ -1,0 +1,128 @@
+<!-- ============================================================
+     BLOCO DE TRAQUEAMENTO (versao inline, so navegador)
+     Setup: Kiwify + Meta Pixel + Google Analytics 4
+
+     COMO USAR:
+     1) Troque SEU_PIXEL_ID (2 lugares) pelo seu Pixel ID.
+     2) Troque G-XXXXXXXXXX (2 lugares) pelo seu Measurement ID do GA4.
+     3) Cole o BLOCO 1 dentro do <head> da sua pagina.
+     4) Cole o BLOCO 2 logo antes do </body>.
+     5) Garanta que seu botao de compra tenha class="cta" e aponte
+        para o seu link Kiwify (ex.: https://pay.kiwify.com.br/SEU_CODIGO).
+
+     A Kiwify dispara InitiateCheckout, AddPaymentInfo e Purchase.
+     Esta pagina dispara: PageView, ViewContent (clique no CTA),
+     Scroll (25/50/75/90%) e Tempo na pagina, e repassa UTMs + fbclid
+     para o link do checkout (atribuicao).
+     ============================================================ -->
+
+
+<!-- ====================== BLOCO 1: <head> ====================== -->
+
+<!-- Meta Pixel -->
+<script>
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', 'SEU_PIXEL_ID');
+  // PageView e disparado no BLOCO 2 para compartilhar dados; nao duplicar aqui.
+</script>
+<noscript>
+  <img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=SEU_PIXEL_ID&ev=PageView&noscript=1" alt="" />
+</noscript>
+
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', { send_page_view: false });
+</script>
+
+
+<!-- ================ BLOCO 2: antes do </body> ================= -->
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Utilidades ----
+  function getCookie(name){var m=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');return m?decodeURIComponent(m.pop()):'';}
+  function getQuery(name){return new URLSearchParams(window.location.search).get(name)||'';}
+
+  // GA4 usa nomes diferentes dos da Meta.
+  var GA4_MAP={PageView:'page_view',ViewContent:'view_item',InitiateCheckout:'begin_checkout',AddPaymentInfo:'add_payment_info',Purchase:'purchase',Lead:'generate_lead'};
+  function toGA4(c){var p={};if(c.currency)p.currency=c.currency;if(c.value!=null)p.value=c.value;if(c.content_name)p.item_name=c.content_name;if(c.content_ids)p.item_id=[].concat(c.content_ids).join(',');return p;}
+
+  // ---- Disparo central (Pixel + GA4) ----
+  function track(eventName, custom){
+    custom = custom || {};
+    if (window.fbq) window.fbq('track', eventName, custom);
+    if (window.gtag) window.gtag('event', GA4_MAP[eventName]||eventName, toGA4(custom));
+  }
+  window.salesTracking = { track: track };
+
+  // ---- PageView ----
+  track('PageView');
+
+  // ---- Eventos por data-attribute (ex.: data-track-event="ViewContent") ----
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('[data-track-event]');
+    if (!el) return;
+    var custom = {};
+    if (el.dataset.value!=null) custom.value = parseFloat(el.dataset.value);
+    if (el.dataset.currency) custom.currency = el.dataset.currency;
+    if (el.dataset.contentName) custom.content_name = el.dataset.contentName;
+    if (el.dataset.contentIds) custom.content_ids = el.dataset.contentIds.split(',');
+    track(el.getAttribute('data-track-event'), custom);
+  });
+
+  // ---- Profundidade de scroll (25/50/75/90%) ----
+  (function(){
+    var marks=[25,50,75,90], fired={};
+    window.addEventListener('scroll', function(){
+      var h=document.documentElement;
+      var pct=Math.round(((h.scrollTop||document.body.scrollTop)/((h.scrollHeight-h.clientHeight)||1))*100);
+      marks.forEach(function(m){
+        if(pct>=m && !fired[m]){fired[m]=true;
+          if(window.gtag) window.gtag('event','scroll_depth',{percent:m});
+          if(window.fbq) window.fbq('trackCustom','ScrollDepth',{percent:m});}
+      });
+    }, {passive:true});
+  })();
+
+  // ---- Tempo na pagina (15/30/60/120s) ----
+  [15,30,60,120].forEach(function(sec){
+    setTimeout(function(){
+      if(window.gtag) window.gtag('event','time_on_page',{seconds:sec});
+      if(window.fbq) window.fbq('trackCustom','TimeOnPage',{seconds:sec});
+    }, sec*1000);
+  });
+
+  // ---- Repasse de UTMs + fbclid para o checkout Kiwify ----
+  (function(){
+    var keep=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid','src','sck'];
+    var cur=new URLSearchParams(window.location.search), pass=new URLSearchParams();
+    keep.forEach(function(k){var v=cur.get(k); if(v) pass.set(k,v);});
+    if(Array.from(pass.keys()).length===0) return;
+    document.querySelectorAll('a[data-forward-params], a.cta').forEach(function(a){
+      try{var u=new URL(a.href); pass.forEach(function(v,k){ if(!u.searchParams.has(k)) u.searchParams.set(k,v);}); a.href=u.toString();}catch(e){}
+    });
+  })();
+})();
+</script>
+
+<!-- ====================== EXEMPLO DE BOTAO ====================== -->
+<!--
+<a href="https://pay.kiwify.com.br/SEU_CODIGO"
+   class="cta"
+   data-track-event="ViewContent"
+   data-value="197" data-currency="BRL"
+   data-content-name="Curso X" data-content-ids="produto-123">
+  Quero Comprar Agora
+</a>
+-->
