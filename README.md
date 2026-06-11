@@ -115,8 +115,8 @@ Voce **nao roda JS dentro do checkout da Kiwify**, entao os eventos sao dividido
 
 | Onde | Eventos | Responsavel |
 |---|---|---|
-| Sua pagina de vendas (este projeto) | PageView, ViewContent, Scroll, Tempo, **InitiateCheckout** | Pixel + GA4 + nossa CAPI |
-| Checkout Kiwify | **AddPaymentInfo, Purchase** | Kiwify (nativo, pagamento confirmado no servidor) |
+| Sua pagina de vendas (este projeto) | PageView, Scroll, Tempo, **ViewContent** (clique no CTA) | Pixel + GA4 + nossa CAPI |
+| Checkout Kiwify | **InitiateCheckout, AddPaymentInfo, Purchase** | Kiwify (nativo, pagamento confirmado no servidor) |
 
 ### 1. Configurar o Pixel + CAPI na Kiwify
 Painel da Kiwify → **Apps → Pixel/Facebook** (ou Configuracoes → Pixel):
@@ -134,13 +134,12 @@ de compra aponte para o seu link Kiwify:
 
 ```html
 <a href="https://pay.kiwify.com.br/SEU_CODIGO" class="cta"
-   data-track-event="InitiateCheckout" data-value="197" data-currency="BRL">Comprar</a>
+   data-track-event="ViewContent" data-value="197" data-currency="BRL">Comprar</a>
 ```
 
-> **Atencao a contagem dupla de InitiateCheckout:** sua pagina dispara IC no clique e a
-> Kiwify dispara IC ao abrir o checkout. Se quiser zero duplicidade nesse evento, troque
-> o `data-track-event` do botao para `ViewContent` e deixe a Kiwify ser a unica fonte de IC.
-> Purchase nunca duplica (so a Kiwify dispara).
+> **Metrica limpa (configuracao atual):** o CTA dispara `ViewContent` (interesse na oferta)
+> e a **Kiwify e a unica fonte de InitiateCheckout** — sem contagem dupla. Purchase tambem
+> nunca duplica (so a Kiwify dispara).
 
 > **GA4 entre dominios:** como o checkout fica em `pay.kiwify.com.br`, a melhor atribuicao
 > entre sua pagina e a venda e via **UTMs** (ja repassadas). O GA4 da Kiwify registra a

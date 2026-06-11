@@ -50,7 +50,7 @@
            UTMs + fbclid automaticamente para a URL no carregamento. -->
       <a href="https://pay.kiwify.com.br/SEU_CODIGO"
          class="cta"
-         data-track-event="InitiateCheckout"
+         data-track-event="ViewContent"
          data-value="197"
          data-currency="BRL"
          data-content-name="Curso X"
@@ -76,7 +76,7 @@
       <h2>Pronto para comecar?</h2>
       <a href="https://seu-checkout.com/produto-123"
          class="cta"
-         data-track-event="InitiateCheckout"
+         data-track-event="ViewContent"
          data-value="197"
          data-currency="BRL"
          data-content-name="Curso X"
@@ -91,12 +91,13 @@
     DIVISAO DE EVENTOS (setup com Kiwify)
     ============================================================
 
-    Esta pagina (sua) dispara: PageView, ViewContent, Scroll, Tempo
-    e InitiateCheckout (no clique do CTA).
+    Esta pagina (sua) dispara: PageView, Scroll, Tempo e ViewContent
+    (no clique do CTA, sinalizando interesse na oferta).
 
-    A KIWIFY dispara nativamente: AddPaymentInfo e Purchase
-    (pagamento confirmado no servidor da Kiwify). Configure no painel
-    da Kiwify o mesmo Pixel ID + token da CAPI + GA4 ID. Veja o README.
+    A KIWIFY dispara nativamente: InitiateCheckout, AddPaymentInfo e
+    Purchase (pagamento confirmado no servidor da Kiwify). Ela e a UNICA
+    fonte de InitiateCheckout, entao nao ha contagem dupla. Configure no
+    painel da Kiwify o mesmo Pixel ID + token da CAPI + GA4 ID. Veja o README.
 
     Se um dia quiser disparar um Lead/ViewContent manualmente nesta
     pagina (ex.: captura de email antes do checkout):
