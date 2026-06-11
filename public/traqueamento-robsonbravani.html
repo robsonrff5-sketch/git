@@ -1,0 +1,104 @@
+<!-- ===================================================================
+     TRAQUEAMENTO — Pack Videos Virais (robsonbravani.com.br)
+     Meta Pixel (ja instalado: 1686602226088202) + Google Analytics 4
+     ===================================================================
+
+     ONDE COLAR (WordPress + Elementor):
+     Opcao mais simples e segura -> adicione um widget "HTML" do Elementor
+     no FINAL da pagina e cole TODO este conteudo dentro dele. Salve/publique.
+
+     (Alternativa: cole antes do </body> dentro do widget HTML que ja contem
+      a pagina. Funciona igual.)
+
+     IMPORTANTE:
+     - O Meta Pixel JA esta no site e JA dispara PageView. Este bloco NAO
+       reinstala o Pixel nem repete o PageView (evita contagem dupla).
+     - InitiateCheckout, AddPaymentInfo e Purchase sao disparados pela
+       KIWIFY (configure la o mesmo Pixel 1686602226088202 + token da CAPI
+       + o GA4 G-PN1T883GCH). Esta pagina cuida de ViewContent, Scroll e Tempo.
+     - Se um dia voce ativar o GA4 G-PN1T883GCH DENTRO do GTM, remova o
+       bloco "Google Analytics 4" abaixo para nao contar page_view 2x.
+     =================================================================== -->
+
+
+<!-- ===== Google Analytics 4 (G-PN1T883GCH) ===== -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PN1T883GCH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-PN1T883GCH'); // envia o page_view do GA4 automaticamente
+</script>
+
+
+<!-- ===== Eventos (Pixel + GA4) ===== -->
+<script>
+(function () {
+  'use strict';
+  if (window.__rbTrackReady) return;     // garante execucao unica
+  window.__rbTrackReady = true;
+
+  // Dados do produto para os eventos de valor.
+  var PRODUTO = { content_name: 'Pack Videos Virais', content_ids: ['pack-videos-virais'], value: 17, currency: 'BRL', content_type: 'product' };
+
+  function fbqSafe(){ if (window.fbq) try { window.fbq.apply(null, arguments); } catch(e){} }
+  function ga(){ if (window.gtag) try { window.gtag.apply(null, arguments); } catch(e){} }
+
+  // ---- ViewContent: quando a OFERTA aparece na tela (dispara 1x) ----
+  var offer = document.getElementById('oferta');
+  if (offer && 'IntersectionObserver' in window) {
+    var vcDone = false;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !vcDone) {
+          vcDone = true;
+          fbqSafe('track', 'ViewContent', PRODUTO);
+          ga('event', 'view_item', { currency: 'BRL', value: 17, item_name: PRODUTO.content_name });
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.4 });
+    io.observe(offer);
+  }
+
+  // ---- Profundidade de scroll: 25/50/75/90% ----
+  (function () {
+    var marks = [25, 50, 75, 90], fired = {};
+    window.addEventListener('scroll', function () {
+      var h = document.documentElement;
+      var pct = Math.round(((h.scrollTop || document.body.scrollTop) / ((h.scrollHeight - h.clientHeight) || 1)) * 100);
+      marks.forEach(function (m) {
+        if (pct >= m && !fired[m]) {
+          fired[m] = true;
+          ga('event', 'scroll_depth', { percent: m });
+          fbqSafe('trackCustom', 'ScrollDepth', { percent: m });
+        }
+      });
+    }, { passive: true });
+  })();
+
+  // ---- Tempo na pagina: 15/30/60/120s ----
+  [15, 30, 60, 120].forEach(function (sec) {
+    setTimeout(function () {
+      ga('event', 'time_on_page', { seconds: sec });
+      fbqSafe('trackCustom', 'TimeOnPage', { seconds: sec });
+    }, sec * 1000);
+  });
+
+  // ---- Repasse de UTMs + fbclid para o checkout da Kiwify ----
+  // Garante que a venda na Kiwify seja atribuida a campanha/anuncio certo.
+  (function () {
+    var keep = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid', 'src', 'sck'];
+    var cur = new URLSearchParams(location.search), pass = new URLSearchParams();
+    keep.forEach(function (k) { var v = cur.get(k); if (v) pass.set(k, v); });
+    if (Array.from(pass.keys()).length === 0) return;
+    document.querySelectorAll('a[href*="pay.kiwify.com.br"]').forEach(function (a) {
+      try {
+        var u = new URL(a.href);
+        pass.forEach(function (v, k) { if (!u.searchParams.has(k)) u.searchParams.set(k, v); });
+        a.href = u.toString();
+      } catch (e) {}
+    });
+  })();
+})();
+</script>
