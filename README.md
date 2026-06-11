@@ -109,6 +109,45 @@ evitando contagem dupla. Nao remova essa logica.
 
 ---
 
+## Setup com Kiwify (importante)
+
+Voce **nao roda JS dentro do checkout da Kiwify**, entao os eventos sao divididos:
+
+| Onde | Eventos | Responsavel |
+|---|---|---|
+| Sua pagina de vendas (este projeto) | PageView, ViewContent, Scroll, Tempo, **InitiateCheckout** | Pixel + GA4 + nossa CAPI |
+| Checkout Kiwify | **AddPaymentInfo, Purchase** | Kiwify (nativo, pagamento confirmado no servidor) |
+
+### 1. Configurar o Pixel + CAPI na Kiwify
+Painel da Kiwify → **Apps → Pixel/Facebook** (ou Configuracoes → Pixel):
+- Cole o **mesmo Pixel ID** que voce usa aqui.
+- Cole o **token da Conversions API** (pode gerar um token proprio para a Kiwify no mesmo Pixel — varias fontes para um Pixel so e o recomendado).
+- A Kiwify passa a disparar InitiateCheckout/AddPaymentInfo/**Purchase** com deduplicacao propria.
+
+### 2. Configurar o GA4 na Kiwify
+Mesmo painel → campo de **Google Analytics**: cole o `G-XXXXXXXXXX`.
+
+### 3. Conectar a atribuicao (sua pagina → Kiwify)
+O `tracking.js` ja **repassa automaticamente** `utm_*`, `fbclid`, `gclid`, `src` e `sck`
+para qualquer link com a classe `cta` (ou `data-forward-params`). Garanta que o botao
+de compra aponte para o seu link Kiwify:
+
+```html
+<a href="https://pay.kiwify.com.br/SEU_CODIGO" class="cta"
+   data-track-event="InitiateCheckout" data-value="197" data-currency="BRL">Comprar</a>
+```
+
+> **Atencao a contagem dupla de InitiateCheckout:** sua pagina dispara IC no clique e a
+> Kiwify dispara IC ao abrir o checkout. Se quiser zero duplicidade nesse evento, troque
+> o `data-track-event` do botao para `ViewContent` e deixe a Kiwify ser a unica fonte de IC.
+> Purchase nunca duplica (so a Kiwify dispara).
+
+> **GA4 entre dominios:** como o checkout fica em `pay.kiwify.com.br`, a melhor atribuicao
+> entre sua pagina e a venda e via **UTMs** (ja repassadas). O GA4 da Kiwify registra a
+> compra a partir desses parametros.
+
+---
+
 ## Producao
 
 - Hospede o servidor Node com HTTPS (a CAPI e os cookies `_fbc`/`_fbp` exigem dominio seguro).

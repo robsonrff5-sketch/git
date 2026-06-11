@@ -46,7 +46,9 @@
       <div class="price">R$ 197,00</div>
 
       <!-- CTA principal: dispara InitiateCheckout via data-attributes -->
-      <a href="https://seu-checkout.com/produto-123"
+      <!-- Link do checkout Kiwify. A classe "cta" faz o tracking.js repassar
+           UTMs + fbclid automaticamente para a URL no carregamento. -->
+      <a href="https://pay.kiwify.com.br/SEU_CODIGO"
          class="cta"
          data-track-event="InitiateCheckout"
          data-value="197"
@@ -86,24 +88,22 @@
 
   <!--
     ============================================================
-    COMO DISPARAR OS DEMAIS EVENTOS
+    DIVISAO DE EVENTOS (setup com Kiwify)
     ============================================================
 
-    1) AddPaymentInfo (quando o usuario preenche o pagamento):
-       window.salesTracking.addPaymentInfo({
-         value: 197, currency: 'BRL', content_name: 'Curso X'
-       });
+    Esta pagina (sua) dispara: PageView, ViewContent, Scroll, Tempo
+    e InitiateCheckout (no clique do CTA).
 
-    2) Purchase (na PAGINA DE OBRIGADO, apos a venda confirmada):
-       window.salesTracking.purchase(
-         { value: 197, currency: 'BRL', content_name: 'Curso X',
-           content_ids: ['produto-123'], order_id: 'PEDIDO-0001' },
-         { em: 'cliente@email.com', ph: '+5511999999999' } // PII -> hash no servidor
-       );
+    A KIWIFY dispara nativamente: AddPaymentInfo e Purchase
+    (pagamento confirmado no servidor da Kiwify). Configure no painel
+    da Kiwify o mesmo Pixel ID + token da CAPI + GA4 ID. Veja o README.
 
-    3) Lead (captura de email/formulario):
+    Se um dia quiser disparar um Lead/ViewContent manualmente nesta
+    pagina (ex.: captura de email antes do checkout):
        window.salesTracking.lead({ content_name: 'Newsletter' },
                                   { em: 'cliente@email.com' });
+       window.salesTracking.track('ViewContent',
+                                  { content_name: 'Curso X', value: 197, currency: 'BRL' });
     ============================================================
   -->
 </body>

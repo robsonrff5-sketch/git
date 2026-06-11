@@ -191,6 +191,36 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
+  // ---------- Repasse de parametros para o checkout (Kiwify) ----------
+  // Voce nao roda JS dentro da Kiwify, entao a atribuicao da venda depende
+  // de levar UTMs + fbclid no link do checkout. A Kiwify le esses parametros
+  // (incluindo "src" e "sck", seus codigos de rastreio) e o Pixel/GA4 dela
+  // fecham a atribuicao. Reescreve os links .cta no carregamento da pagina.
+  function forwardParamsToCheckout() {
+    var keep = [
+      'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+      'fbclid', 'gclid', 'src', 'sck',
+    ];
+    var current = new URLSearchParams(window.location.search);
+    var pass = new URLSearchParams();
+    keep.forEach(function (k) {
+      var v = current.get(k);
+      if (v) pass.set(k, v);
+    });
+    if (Array.from(pass.keys()).length === 0) return;
+
+    var links = document.querySelectorAll('a[data-forward-params], a.cta');
+    links.forEach(function (a) {
+      try {
+        var url = new URL(a.href);
+        pass.forEach(function (v, k) {
+          if (!url.searchParams.has(k)) url.searchParams.set(k, v);
+        });
+        a.href = url.toString();
+      } catch (e) { /* href invalido: ignora */ }
+    });
+  }
+
   function trackTimeOnPage() {
     var marks = [15, 30, 60, 120]; // segundos
     marks.forEach(function (sec) {
@@ -230,6 +260,7 @@
     trackScrollDepth();
     trackTimeOnPage();
     wireDataAttributes();
+    forwardParamsToCheckout();
   }
 
   // API publica para disparos manuais (ex.: Purchase na pagina de obrigado).
