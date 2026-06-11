@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pagina de Vendas - Exemplo com Traqueamento</title>
+
+  <!-- 1) Config publica (Pixel ID + GA4 ID) vinda do servidor/.env -->
+  <script src="/tracking-config.js"></script>
+  <!-- 2) Camada de traqueamento (Pixel + GA4 + CAPI) -->
+  <script src="/js/tracking.js" defer></script>
+
+  <style>
+    :root { --brand: #1d4ed8; --ink: #0f172a; --muted: #64748b; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--ink); line-height: 1.6;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px; }
+    .hero { text-align: center; padding: 64px 0 32px; }
+    h1 { font-size: clamp(28px, 5vw, 44px); margin: 0 0 12px; }
+    .sub { color: var(--muted); font-size: 18px; }
+    .price { font-size: 40px; font-weight: 800; margin: 24px 0 8px; }
+    .cta {
+      display: inline-block; background: var(--brand); color: #fff; text-decoration: none;
+      font-weight: 700; font-size: 18px; padding: 16px 40px; border-radius: 12px;
+      border: none; cursor: pointer; margin: 12px 0;
+    }
+    .cta:hover { filter: brightness(1.08); }
+    section { padding: 32px 0; border-top: 1px solid #e2e8f0; }
+    .spacer { height: 800px; } /* so para demonstrar o scroll tracking */
+  </style>
+</head>
+<body>
+  <!-- noscript fallback do Meta Pixel (substitua SEU_PIXEL_ID) -->
+  <noscript>
+    <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=SEU_PIXEL_ID&ev=PageView&noscript=1" alt="" />
+  </noscript>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Seu Produto Incrivel</h1>
+      <p class="sub">A solucao definitiva para [a dor do seu cliente].</p>
+      <div class="price">R$ 197,00</div>
+
+      <!-- CTA principal: dispara InitiateCheckout via data-attributes -->
+      <a href="https://seu-checkout.com/produto-123"
+         class="cta"
+         data-track-event="InitiateCheckout"
+         data-value="197"
+         data-currency="BRL"
+         data-content-name="Curso X"
+         data-content-ids="produto-123">
+        Quero Comprar Agora
+      </a>
+    </div>
+
+    <section>
+      <h2>O que voce vai receber</h2>
+      <p>Descreva aqui os beneficios e modulos da sua oferta.</p>
+    </section>
+
+    <section>
+      <h2>Garantia</h2>
+      <p>7 dias de garantia incondicional.</p>
+    </section>
+
+    <!-- Espaco para demonstrar o tracking de scroll (25/50/75/90%) -->
+    <div class="spacer"></div>
+
+    <section>
+      <h2>Pronto para comecar?</h2>
+      <a href="https://seu-checkout.com/produto-123"
+         class="cta"
+         data-track-event="InitiateCheckout"
+         data-value="197"
+         data-currency="BRL"
+         data-content-name="Curso X"
+         data-content-ids="produto-123">
+        Garantir Minha Vaga
+      </a>
+    </section>
+  </div>
+
+  <!--
+    ============================================================
+    COMO DISPARAR OS DEMAIS EVENTOS
+    ============================================================
+
+    1) AddPaymentInfo (quando o usuario preenche o pagamento):
+       window.salesTracking.addPaymentInfo({
+         value: 197, currency: 'BRL', content_name: 'Curso X'
+       });
+
+    2) Purchase (na PAGINA DE OBRIGADO, apos a venda confirmada):
+       window.salesTracking.purchase(
+         { value: 197, currency: 'BRL', content_name: 'Curso X',
+           content_ids: ['produto-123'], order_id: 'PEDIDO-0001' },
+         { em: 'cliente@email.com', ph: '+5511999999999' } // PII -> hash no servidor
+       );
+
+    3) Lead (captura de email/formulario):
+       window.salesTracking.lead({ content_name: 'Newsletter' },
+                                  { em: 'cliente@email.com' });
+    ============================================================
+  -->
+</body>
+</html>
